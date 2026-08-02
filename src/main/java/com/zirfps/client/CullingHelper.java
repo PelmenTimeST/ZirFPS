@@ -3,9 +3,12 @@ package com.zirfps.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockReader;
-import net.minecraft.world.RayTraceContext;
 
 public final class CullingHelper {
     private CullingHelper() {}
@@ -37,7 +40,7 @@ public final class CullingHelper {
 
         RayTraceContext ctx = new RayTraceContext(
             start, end,
-            RayTraceContext.BlockMode.COLLISION,
+            RayTraceContext.BlockMode.COLLIDER,
             RayTraceContext.FluidMode.NONE,
             target
         );
