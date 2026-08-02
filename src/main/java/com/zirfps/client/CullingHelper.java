@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.RayTraceContext;
 
 public final class CullingHelper {
     private CullingHelper() {}
@@ -22,22 +23,28 @@ public final class CullingHelper {
         Vec3d center = box.getCenter();
         double distSq = cam.squareDistanceTo(center);
 
-        double maxDist = MC.options.renderDistanceChunks * 16.0;
+        double maxDist = MC.gameSettings.renderDistanceChunks * 16.0;
         if (distSq > maxDist * maxDist) return false;
 
         if (distSq > 32.0 * 32.0) return true;
 
-        return rayVisible(cam, center);
+        return rayVisible(cam, center, entity);
     }
 
-    private static boolean rayVisible(Vec3d start, Vec3d end) {
+    private static boolean rayVisible(Vec3d start, Vec3d end, Entity target) {
         IBlockReader world = MC.world;
         if (world == null) return true;
 
-        RayTraceResult result = world.rayTraceBlocks(start, end, false, true, false);
-        if (result == null || result.getType() == RayTraceResult.Type.MISS) return true;
+        RayTraceContext ctx = new RayTraceContext(
+            start, end,
+            RayTraceContext.BlockMode.COLLISION,
+            RayTraceContext.FluidMode.NONE,
+            target
+        );
+        BlockRayTraceResult res = world.rayTraceBlocks(ctx);
+        if (res.getType() == RayTraceResult.Type.MISS) return true;
 
-        double hitDist = start.squareDistanceTo(result.getHitVec());
+        double hitDist = start.squareDistanceTo(res.getHitVec());
         double endDist = start.squareDistanceTo(end);
         return hitDist >= endDist - 0.5;
     }
