@@ -22,7 +22,7 @@ public class ZirFPS {
 
     public ZirFPS(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, ZirConfig.SPEC);
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, (minecraft, screen) -> new ZirConfigScreen(screen));
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, (container, screen) -> new ZirConfigScreen(screen));
 
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::onConfigChanged);

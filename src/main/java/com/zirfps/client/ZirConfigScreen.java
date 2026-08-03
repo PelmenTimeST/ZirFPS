@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.ParticleStatus;
-import net.minecraft.client.GraphicsStatus;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -20,7 +19,8 @@ public class ZirConfigScreen extends Screen {
     private static final int CONTENT_HEIGHT = 11 * BUTTON_HEIGHT + 60;
     private final List<Button> configButtons = new ArrayList<>();
 
-    protected ZirConfigScreen(Screen parent) {
+    // Змінено з protected на public, щоб ZirFPS міг створювати екземпляр
+    public ZirConfigScreen(Screen parent) {
         super(Component.literal("ZirFPS Settings"));
         this.parent = parent;
     }
