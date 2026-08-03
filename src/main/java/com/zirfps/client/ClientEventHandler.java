@@ -5,8 +5,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.ParticleStatus;
 import net.minecraft.client.GraphicsStatus;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.event.tick.ClientTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
 public class ClientEventHandler {
@@ -35,7 +35,7 @@ public class ClientEventHandler {
 
     private void handleDynamicFps() {
         Options options = mc.options;
-        if (!mc.getWindow().isFocused()) {
+        if (!mc.isWindowActive()) {
             if (savedFpsLimit < 0) {
                 savedFpsLimit = options.framerateLimit().get();
                 options.framerateLimit().set(ZirConfig.backgroundFpsLimit);
