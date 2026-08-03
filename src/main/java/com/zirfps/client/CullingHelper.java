@@ -1,5 +1,6 @@
 package com.zirfps.client;
 
+import com.zirfps.config.ZirConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -23,7 +24,7 @@ public final class CullingHelper {
         if (box == null || box.hasNaN()) return true;
 
         double distSq = cam.squareDistanceTo(box.getCenter());
-        double maxDist = MC.gameSettings.renderDistanceChunks * 16.0;
+        double maxDist = ZirConfig.entityRenderDistance > 0 ? ZirConfig.entityRenderDistance : MC.gameSettings.renderDistanceChunks * 16.0;
         if (distSq > maxDist * maxDist) return false;
         if (distSq > 96.0 * 96.0) return true;
         if (!ChunkOcclusionManager.isChunkVisible(entity)) return false;

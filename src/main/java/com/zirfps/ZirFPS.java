@@ -1,6 +1,7 @@
 package com.zirfps;
 
 import com.zirfps.client.ClientEventHandler;
+import com.zirfps.client.GuiEventHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -19,6 +20,7 @@ public class ZirFPS {
 
     private void clientSetup(final FMLClientSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
-        LOGGER.info("ZirFPS loaded. Entity culling and dynamic FPS active.");
+        MinecraftForge.EVENT_BUS.register(new GuiEventHandler());
+        LOGGER.info("ZirFPS loaded.");
     }
 }
