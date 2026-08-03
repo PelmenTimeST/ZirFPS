@@ -4,10 +4,8 @@ import com.zirfps.config.ZirConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ParticleStatus;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.client.event.RenderBlockEntityEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
 public class ClientEventHandler {
@@ -26,20 +24,6 @@ public class ClientEventHandler {
         double dz = mc.player.getZ() - entity.getZ();
         
         if ((dx * dx + dy * dy + dz * dz) > dynamicEntityRadiusSq) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public void onRenderBlockEntity(RenderBlockEntityEvent.Pre event) {
-        if (!ZirConfig.enableEntityCulling || mc.player == null) return;
-
-        BlockEntity be = event.getBlockEntity();
-        double dx = mc.player.getX() - be.getBlockPos().getX();
-        double dy = mc.player.getY() - be.getBlockPos().getY();
-        double dz = mc.player.getZ() - be.getBlockPos().getZ();
-
-        if ((dx * dx + dy * dy + dz * dz) > 2304.0) {
             event.setCanceled(true);
         }
     }
