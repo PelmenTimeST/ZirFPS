@@ -1,22 +1,24 @@
 package com.zirfps.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.VideoSettingsScreen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraft.client.gui.screens.VideoSettingsScreen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 public class GuiEventHandler {
     @SubscribeEvent
-    public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (!(event.getGui() instanceof VideoSettingsScreen)) return;
+    public void onGuiInit(ScreenEvent.Init.Post event) {
+        if (!(event.getScreen() instanceof VideoSettingsScreen)) return;
         Minecraft mc = Minecraft.getInstance();
-        event.addWidget(new Button(
-            mc.mainWindow.getScaledWidth() / 2 - 100,
-            mc.mainWindow.getScaledHeight() / 6 + 168,
-            200, 20,
-            "ZirFPS Settings...",
-            b -> mc.displayGuiScreen(new ZirConfigScreen(event.getGui()))
-        ));
+        event.addListener(Button.builder(
+                Component.literal("ZirFPS Settings..."),
+                b -> mc.setScreen(new ZirConfigScreen(event.getScreen()))
+            )
+            .pos(mc.getWindow().getGuiScaledWidth() / 2 - 100, mc.getWindow().getGuiScaledHeight() / 6 + 168)
+            .size(200, 20)
+            .build()
+        );
     }
 }

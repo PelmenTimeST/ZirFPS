@@ -1,43 +1,41 @@
 package com.zirfps.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public final class ChunkOcclusionManager {
     private ChunkOcclusionManager() {}
-
     private static final Minecraft MC = Minecraft.getInstance();
     private static final Map<Long, Boolean> VISIBILITY = new HashMap<>();
     private static int lastTick = -1;
 
     public static boolean isChunkVisible(Entity entity) {
-        Boolean v = VISIBILITY.get(ChunkPos.asLong(entity.chunkCoordX, entity.chunkCoordZ));
+        Boolean v = VISIBILITY.get(ChunkPos.asLong(entity.chunkPosition().x, entity.chunkPosition().z));
         return v == null || v;
     }
 
     public static void update() {
-        if (MC.player == null || MC.world == null) return;
-        int tick = MC.player.ticksExisted;
+        if (MC.player == null || MC.level == null) return;
+        int tick = MC.player.tickCount;
         if (tick - lastTick < 20) return;
         lastTick = tick;
         VISIBILITY.clear();
 
-        Vec3d cam = MC.gameRenderer.getActiveRenderInfo().getProjectedView();
-        BlockPos pos = MC.player.getPosition();
+        Vec3 cam = MC.gameRenderer.getMainCamera().getPosition();
+        BlockPos pos = MC.player.blockPosition();
         int pcx = pos.getX() >> 4;
         int pcz = pos.getZ() >> 4;
-        int radius = Math.min(MC.gameSettings.renderDistanceChunks, 6);
+        int radius = Math.min(MC.options.renderDistance().get(), 6);
 
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
@@ -50,21 +48,19 @@ public final class ChunkOcclusionManager {
         }
     }
 
-    private static boolean isOccluded(Vec3d cam, int cx, int cz) {
-        Vec3d center = new Vec3d((cx << 4) + 8, cam.y, (cz << 4) + 8);
+    private static boolean isOccluded(Vec3 cam, int cx, int cz) {
+        Vec3 center = new Vec3((cx << 4) + 8, cam.y, (cz << 4) + 8);
         double dist = cam.distanceTo(center);
         if (dist < 16.0) return false;
 
-        IBlockReader world = MC.world;
-        BlockRayTraceResult res = world.rayTraceBlocks(new RayTraceContext(
-            cam, center,
-            RayTraceContext.BlockMode.COLLIDER,
-            RayTraceContext.FluidMode.NONE,
-            MC.player
+        Level level = MC.level;
+        BlockHitResult res = level.clip(new ClipContext(
+            cam, center, ClipContext.Block.COLLIDER,
+            ClipContext.Fluid.NONE, MC.player
         ));
-        if (res.getType() == RayTraceResult.Type.MISS) return false;
-        if (!world.getBlockState(res.getPos()).isOpaqueCube(world, res.getPos())) return false;
+        if (res.getType() == HitResult.Type.MISS) return false;
+        if (!level.getBlockState(res.getBlockPos()).isSolidRender(level, res.getBlockPos())) return false;
 
-        return cam.distanceTo(res.getHitVec()) < dist - 4.0;
+        return cam.distanceToSqr(res.getLocation()) < dist * dist - 16.0;
     }
 }

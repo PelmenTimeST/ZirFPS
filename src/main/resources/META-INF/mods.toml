@@ -1,27 +1,28 @@
 modLoader="javafml"
-loaderVersion="[28,)"
+loaderVersion="[4,)"
+license="MIT"
 
 [[mods]]
 modId="zirfps"
-version="1.0.0"
+version="${version}"
 displayName="ZirFPS"
 authors="ZirFPS"
 description='''
-Client-side optimization mod for Minecraft 1.14.4.
-Features: Entity Culling, Dynamic FPS.
-Boosts FPS by skipping invisible entities and reducing background load.
+Client-side optimization mod for Minecraft 1.21.1.
+Features: Smart Mode, Entity Culling, Chunk Occlusion, Dynamic FPS, Adaptive Render Distance.
+Competes with Sodium through intelligent adaptive logic.
 '''
 
 [[dependencies.zirfps]]
-    modId="forge"
+    modId="neoforge"
     mandatory=true
-    versionRange="[28,)"
+    versionRange="[21.1.1,)"
     ordering="NONE"
     side="CLIENT"
 
 [[dependencies.zirfps]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.14.4]"
+    versionRange="[1.21.1]"
     ordering="NONE"
     side="CLIENT"
