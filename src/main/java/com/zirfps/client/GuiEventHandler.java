@@ -10,21 +10,19 @@ import net.neoforged.bus.api.SubscribeEvent;
 public class GuiEventHandler {
     @SubscribeEvent
     public void onGuiInit(ScreenEvent.Init.Post event) {
+        if (!(event.getScreen() instanceof OptionsScreen screen)) return;
 
-        if (!(event.getScreen() instanceof OptionsScreen)) return;
+        int screenWidth = screen.width;
+        int screenHeight = screen.height;
 
-        Minecraft mc = Minecraft.getInstance();
-        int screenWidth = event.getScreen().width;
-        int screenHeight = event.getScreen().height;
-
-        int buttonWidth = 150;
+        int x = screenWidth / 2 + 104;
+        int y = screenHeight - 27;
+        int buttonWidth = 96;
         int buttonHeight = 20;
-        int x = screenWidth / 2 - 155; 
-        int y = screenHeight - 27;     
 
         event.addListener(Button.builder(
-                Component.literal("ZirFPS..."),
-                b -> mc.setScreen(new ZirConfigScreen(event.getScreen()))
+                Component.literal("⚡ ZirFPS"),
+                b -> Minecraft.getInstance().setScreen(new ZirConfigScreen(screen))
             )
             .pos(x, y)
             .size(buttonWidth, buttonHeight)
