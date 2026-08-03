@@ -10,6 +10,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class ClientEventHandler {
     private final Minecraft mc = Minecraft.getInstance();
     private int savedFpsLimit = -1;
+    private int tickCounter = 0;
+    private int fpsAccumulator = 0;
+    private int originalRenderDistance = -1;
 
     @SubscribeEvent
     public void onRenderLiving(RenderLivingEvent.Pre<?, ?> event) {
@@ -22,14 +25,15 @@ public class ClientEventHandler {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+
         if (ZirConfig.enableDynamicFps) handleDynamicFps();
+        if (ZirConfig.enableChunkOcclusion) ChunkOcclusionManager.update();
+        if (ZirConfig.enableAdaptiveRenderDistance) handleAdaptiveRenderDistance();
     }
 
     private void handleDynamicFps() {
         GameSettings gs = mc.gameSettings;
-        boolean focused = mc.isGameFocused();
-
-        if (!focused) {
+        if (!mc.isGameFocused()) {
             if (savedFpsLimit < 0) {
                 savedFpsLimit = gs.framerateLimit;
                 gs.framerateLimit = ZirConfig.backgroundFpsLimit;
@@ -39,6 +43,25 @@ public class ClientEventHandler {
                 gs.framerateLimit = savedFpsLimit;
                 savedFpsLimit = -1;
             }
+        }
+    }
+
+    private void handleAdaptiveRenderDistance() {
+        GameSettings gs = mc.gameSettings;
+        if (originalRenderDistance < 0) originalRenderDistance = gs.renderDistanceChunks;
+
+        tickCounter++;
+        fpsAccumulator += Minecraft.getDebugFPS();
+        if (tickCounter < 40) return;
+
+        int avgFps = fpsAccumulator / tickCounter;
+        tickCounter = 0;
+        fpsAccumulator = 0;
+
+        if (avgFps < ZirConfig.targetFps - 10 && gs.renderDistanceChunks > 4) {
+            gs.renderDistanceChunks--;
+        } else if (avgFps > ZirConfig.targetFps + 10 && gs.renderDistanceChunks < originalRenderDistance) {
+            gs.renderDistanceChunks++;
         }
     }
 }
