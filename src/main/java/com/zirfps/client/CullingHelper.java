@@ -1,13 +1,10 @@
 package com.zirfps.client;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.IBlockReader;
 
 public final class CullingHelper {
@@ -31,21 +28,46 @@ public final class CullingHelper {
 
         if (distSq > 32.0 * 32.0) return true;
 
-        return rayVisible(cam, center, entity);
+        return multiRayVisible(cam, box);
     }
 
-    private static boolean rayVisible(Vec3d start, Vec3d end, Entity target) {
+    private static boolean multiRayVisible(Vec3d cam, AxisAlignedBB box) {
+        Vec3d min = new Vec3d(box.minX, box.minY, box.minZ);
+        Vec3d max = new Vec3d(box.maxX, box.maxY, box.maxZ);
+
+        Vec3d[] targets = {
+            box.getCenter(),
+            new Vec3d(min.x, min.y, min.z),
+            new Vec3d(max.x, min.y, min.z),
+            new Vec3d(min.x, min.y, max.z),
+            new Vec3d(max.x, min.y, max.z),
+        };
+
+        int visibleRays = 0;
+        for (Vec3d target : targets) {
+            if (rayVisible(cam, target)) visibleRays++;
+        }
+
+        return visibleRays >= 1;
+    }
+
+    private static boolean rayVisible(Vec3d start, Vec3d end) {
         IBlockReader world = MC.world;
         if (world == null) return true;
 
-        RayTraceContext ctx = new RayTraceContext(
-            start, end,
-            RayTraceContext.BlockMode.COLLIDER,
-            RayTraceContext.FluidMode.NONE,
-            target
+        BlockRayTraceResult res = world.rayTraceBlocks(
+            new RayTraceContext(
+                start, end,
+                RayTraceContext.BlockMode.COLLIDER,
+                RayTraceContext.FluidMode.NONE,
+                MC.player
+            )
         );
-        BlockRayTraceResult res = world.rayTraceBlocks(ctx);
+
         if (res.getType() == RayTraceResult.Type.MISS) return true;
+
+        BlockState state = world.getBlockState(res.getPos());
+        if (!state.isOpaqueCube(world, res.getPos())) return true;
 
         double hitDist = start.squareDistanceTo(res.getHitVec());
         double endDist = start.squareDistanceTo(end);
